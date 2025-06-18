@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Plato Saludable Latinoamericano</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for responsiveness and aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Light green background */
+        }
+        .container {
+            max-width: 1200px; /* Increased max-width for two columns */
+        }
+        .food-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            border-radius: 12px; /* Rounded corners */
+            padding: 0.8rem 1rem; /* Slightly less padding for compactness */
+            margin-bottom: 0.6rem; /* Slightly less margin */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+        }
+        .food-item label {
+            flex-grow: 1; /* Allow label to take available space */
+            margin-right: 0.75rem;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.95rem; /* Slightly smaller font for compactness */
+        }
+        .food-item input[type="number"] {
+            width: 70px; /* Fixed width for input */
+            padding: 0.4rem; /* Slightly less padding */
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            text-align: right;
+            -moz-appearance: textfield; /* Hide arrows in Firefox */
+            appearance: textfield; /* Hide arrows in Chrome, Safari, Edge */
+        }
+        .food-item input[type="number"]::-webkit-outer-spin-button,
+        .food-item input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .category-heading {
+            background-color: #d1fae5; /* Lighter green for category headers */
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: #047857; /* Darker green text */
+        }
+        .feedback-box {
+            background-color: #ecfdf5; /* Even lighter green for feedback */
+            border: 1px solid #a7f3d0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem; /* Adjusted for column layout */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 250px; /* Ensure it has some height even when empty */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically when hidden */
+            align-items: center; /* Center content horizontally when hidden */
+            text-align: center;
+        }
+        .feedback-box.hidden {
+             min-height: 250px; /* Maintain height when hidden */
+             justify-content: center;
+             align-items: center;
+        }
+        .feedback-item {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        .status-adequate { color: #16a34a; } /* Green */
+        .status-low { color: #f59e0b; }    /* Orange */
+        .status-high { color: #ef4444; }   /* Red */
+        .action-button {
+            background-color: #059669; /* Green button */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .action-button:hover {
+            background-color: #04785e;
+        }
+        .info-card {
+            background-color: #e0f2fe; /* Light blue */
+            border-left: 4px solid #38b2ac; /* Teal border */
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            color: #297f87;
+        }
+
+        /* Adjust feedback box content centering when hidden */
+        #results:not(.hidden) {
+            justify-content: flex-start; /* Reset justify content when visible */
+            align-items: flex-start; /* Reset align items when visible */
+            text-align: left;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-xl mt-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center text-emerald-700 mb-6">
+            🍽️ Simulador de Plato Saludable Latinoamericano
+        </h1>
+        <p class="text-center text-lg text-gray-600 mb-8">
+            Elige qué alimentos y en qué cantidad (en gramos) deseas colocar en tu plato.
+            Luego, pulsa "Calcular Plato" para ver qué tan balanceado está según las proporciones ideales.
+        </p>
+
+        <div class="info-card mb-8">
+            <p class="font-bold mb-2">Proporciones Ideales para tu Plato (Basado en el contexto latinoamericano):</p>
+            <ul class="list-disc list-inside text-sm">
+                <li><span class="font-semibold">Vegetales:</span> Del 35% al 45% (objetivo 40%)</li>
+                <li><span class="font-semibold">Frutas:</span> Del 8% al 12% (objetivo 10%)</li>
+                <li><span class="font-semibold">Granos / Cereales:</span> Del 27% al 33% (objetivo 30%)</li>
+                <li><span class="font-semibold">Proteínas Saludables (incluyendo lácteos):</span> Del 18% al 22% (objetivo 20%)</li>
+            </ul>
+            <p class="text-sm mt-2">¡Recuerda que el <span class="font-semibold">agua</span> es la bebida principal y las <span class="font-semibold">grasas saludables</span> (como el aceite de oliva o aguacate) deben usarse en moderación como adición, no como categoría principal del plato!</p>
+        </div>
+
+        <!-- Main two-column layout starts here -->
+        <div class="flex flex-col md:flex-row md:space-x-8">
+            <!-- Left Column: Food Selection -->
+            <div class="w-full md:w-1/2 lg:w-3/5">
+                <h2 class="category-heading mb-4">Selección de Alimentos:</h2>
+                <div id="food-selection" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    <!-- Food items will be dynamically loaded here -->
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="w-full md:w-1/2 lg:w-2/5 mt-8 md:mt-0">
+                <h2 class="category-heading mb-4">Resultados del Plato:</h2>
+                <div id="results" class="feedback-box">
+                    <p class="text-gray-500">Pulsa "Calcular Plato" para ver tus resultados aquí.</p>
+                    <div id="category-feedback">
+                        <!-- Category feedback will be displayed here -->
+                    </div>
+                     <p class="text-center text-sm text-gray-500 mt-4 hidden" id="results-note">Los porcentajes mostrados para cada categoría son la suma de los 'aportes' porcentuales de los alimentos seleccionados, basados en su valor por cada 100g. Estos deben alinearse con las proporciones ideales del plato.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculate button (below the two columns) -->
+        <div class="text-center mt-8">
+            <button id="calculate-button" class="action-button">
+                Calcular Plato
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data de los alimentos, incluyendo su categoría y su aporte porcentual por cada 100g
+        const foods = [
+            // Vegetales (Ideal: 35-45%, objetivo 40%)
+            { name: "Tomate", category: "vegetales", apportionment: 8 },
+            { name: "Cebolla", category: "vegetales", apportionment: 8 },
+            { name: "Lechuga", category: "vegetales", apportionment: 8 },
+            { name: "Zanahoria", category: "vegetales", apportionment: 8 },
+            { name: "Brócoli", category: "vegetales", apportionment: 8 },
+            { name: "Espinaca", category: "vegetales", apportionment: 8 },
+            { name: "Calabaza/Auyama", category: "vegetales", apportionment: 8 },
+            { name: "Pimentón/Ají", category: "vegetales", apportionment: 8 },
+            { name: "Plátano verde (cocido)", category: "vegetales", apportionment: 6 }, // Menor aporte por su densidad calórica
+            { name: "Yuca (cocida)", category: "vegetales", apportionment: 6 }, // Menor aporte por su densidad calórica
+            { name: "Arvejas/Guisantes (frescos)", category: "vegetales", apportionment: 7 },
+            // Frutas (Ideal: 8-12%, objetivo 10%)
+            { name: "Mango", category: "frutas", apportionment: 10 },
+            { name: "Guayaba", category: "frutas", apportionment: 10 },
+            { name: "Piña", category: "frutas", apportionment: 10 },
+            { name: "Banano/Plátano maduro", category: "frutas", apportionment: 10 },
+            { name: "Papaya", category: "frutas", apportionment: 10 },
+            { name: "Naranja", category: "frutas", apportionment: 10 },
+            { name: "Aguacate", category: "frutas", apportionment: 5 }, // Menor aporte debido a su contenido graso
+            // Granos / Cereales (Ideal: 27-33%, objetivo 30%)
+            { name: "Arroz integral (cocido)", category: "granos", apportionment: 6 },
+            { name: "Arroz blanco (cocido)", category: "granos", apportionment: 5 },
+            { name: "Maíz (cocido)", category: "granos", apportionment: 6 },
+            { name: "Arepa de maíz", category: "granos", apportionment: 5 },
+            { name: "Quinoa (cocida)", category: "granos", apportionment: 7 },
+            { name: "Avena (cocida)", category: "granos", apportionment: 7 },
+            { name: "Papa/Patata (cocida)", category: "granos", apportionment: 6 },
+            { name: "Pan integral", category: "granos", apportionment: 5 },
+            // Proteínas Saludables (incluyendo lácteos) (Ideal: 18-22%, objetivo 20%)
+            { name: "Frijoles negros (cocidos)", category: "proteinas", apportionment: 10 },
+            { name: "Lentejas (cocidas)", category: "proteinas", apportionment: 10 },
+            { name: "Garbanzos (cocidos)", category: "proteinas", apportionment: 10 },
+            { name: "Pollo (pechuga sin piel)", category: "proteinas", apportionment: 10 },
+            { name: "Pescado (blanco)", category: "proteinas", apportionment: 10 },
+            { name: "Huevo", category: "proteinas", apportionment: 10 },
+            { name: "Carne de res (magra)", category: "proteinas", apportionment: 10 },
+            { name: "Queso fresco (bajo grasa)", category: "proteinas", apportionment: 10 },
+            { name: "Leche líquida (descremada)", category: "proteinas", apportionment: 10 },
+            { name: "Yogur natural (sin azúcar)", category: "proteinas", apportionment: 10 },
+        ];
+
+        // Rangos ideales para las proporciones del plato (peso total eliminado)
+        const idealRanges = {
+            vegetales: { min: 35, max: 45, name: "Vegetales" }, // Target 40%
+            frutas: { min: 8, max: 12, name: "Frutas" },       // Target 10%
+            granos: { min: 27, max: 33, name: "Granos / Cereales" }, // Target 30%
+            proteinas: { min: 18, max: 22, name: "Proteínas Saludables (incluyendo lácteos)" }, // Target 20%
+        };
+
+        // Función para cargar los alimentos en el HTML
+        function loadFoods() {
+            const foodSelectionDiv = document.getElementById('food-selection');
+            let currentCategory = '';
+
+            foods.forEach((food, index) => {
+                if (food.category !== currentCategory) {
+                    currentCategory = food.category;
+                    const categoryName = idealRanges[currentCategory] ? idealRanges[currentCategory].name : currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
+                    foodSelectionDiv.innerHTML += `<h4 class="font-bold text-md text-emerald-600 mt-3 mb-1 col-span-full">${categoryName}:</h4>`;
+                }
+
+                const foodItemDiv = document.createElement('div');
+                foodItemDiv.className = 'food-item';
+                foodItemDiv.innerHTML = `
+                    <label for="food-${index}">${food.name}</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" id="food-${index}" data-category="${food.category}" data-apportionment="${food.apportionment}" placeholder="0" min="0" value="0">
+                        <span>g</span>
+                    </div>
+                `;
+                foodSelectionDiv.appendChild(foodItemDiv);
+            });
+        }
+
+        // Función para calcular y mostrar los resultados del plato
+        function calculatePlate() {
+            const inputs = document.querySelectorAll('#food-selection input[type="number"]');
+            let categoryApportionments = { // Changed to store summed apportionments
+                vegetales: 0,
+                frutas: 0,
+                granos: 0,
+                proteinas: 0
+            };
+            let totalGramsSelected = 0; // Keeping track of total grams for the "no food selected" check
+
+            inputs.forEach(input => {
+                const grams = parseFloat(input.value);
+                const category = input.dataset.category;
+                const apportionmentPer100g = parseFloat(input.dataset.apportionment);
+
+                if (!isNaN(grams) && grams > 0) {
+                    // Suma el aporte porcentual de cada alimento a su categoría
+                    categoryApportionments[category] += (grams / 100) * apportionmentPer100g;
+                    totalGramsSelected += grams; // Track total grams to ensure something is in the plate
+                }
+            });
+
+            const resultsDiv = document.getElementById('results');
+            const categoryFeedbackDiv = document.getElementById('category-feedback');
+            const initialMessage = resultsDiv.querySelector('p:not([id])'); // Selects the initial descriptive paragraph
+            const resultsNote = document.getElementById('results-note');
+
+            categoryFeedbackDiv.innerHTML = ''; // Limpiar resultados anteriores
+            
+            if (initialMessage) {
+                initialMessage.classList.add('hidden'); // Hide the initial message once calculation starts
+            }
+            resultsNote.classList.remove('hidden'); // Show the note about percentages
+
+            if (totalGramsSelected === 0) {
+                // If no food is added, show a specific message and hide others
+                resultsDiv.classList.remove('hidden');
+                categoryFeedbackDiv.innerHTML = '<p class="text-red-500 font-semibold">¡Por favor, añade algunos alimentos a tu plato para calcular!</p>';
+                resultsNote.classList.add('hidden'); // Hide the note if no food
+                return;
+            }
+
+            // Display feedback for each category based on summed apportionments
+            for (const category in idealRanges) {
+                const ideal = idealRanges[category];
+                const currentApportionment = categoryApportionments[category] || 0; // Use 0 if category not present
+
+                let statusClass = '';
+                let message = '';
+
+                if (currentApportionment >= ideal.min && currentApportionment <= ideal.max) {
+                    statusClass = 'status-adequate';
+                    message = `Adecuado (${currentApportionment.toFixed(1)}%)`;
+                } else if (currentApportionment < ideal.min) {
+                    statusClass = 'status-low';
+                    message = `Demasiado bajo (${currentApportionment.toFixed(1)}%)`;
+                } else { // currentApportionment > ideal.max
+                    statusClass = 'status-high';
+                    message = `Demasiado alto (${currentApportionment.toFixed(1)}%)`;
+                }
+
+                categoryFeedbackDiv.innerHTML += `
+                    <p class="feedback-item ${statusClass}">
+                        <span class="font-bold">${ideal.name}:</span> ${message}
+                    </p>
+                `;
+            }
+
+            resultsDiv.classList.remove('hidden'); // Show the results box
+        }
+
+        // Cargar alimentos cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFoods();
+            document.getElementById('calculate-button').addEventListener('click', calculatePlate);
+        });
+    </script>
+</body>
+</html>

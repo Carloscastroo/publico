@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario de Nutrición</title>
+    <!-- Incluye Tailwind CSS CDN para estilos rápidos y responsivos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Fuente Inter para un look moderno */
+            background-color: #f0f4f8; /* Un fondo suave */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 1rem; /* Esquinas redondeadas */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            max-width: 800px;
+            width: 100%;
+            margin-top: 20px; /* Margen superior para centrar verticalmente */
+        }
+        .question-card {
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+        .question-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            background-color: #ffffff;
+        }
+        .option-label:hover {
+            background-color: #eff6ff;
+            border-color: #60a5fa;
+        }
+        .option-label input[type="radio"] {
+            margin-right: 0.75rem;
+            accent-color: #3b82f6; /* Color de acento para los radio buttons */
+        }
+        .submit-button {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            margin-top: 1.5rem;
+        }
+        .submit-button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+        .submit-button:active {
+            transform: translateY(0);
+        }
+        .results-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981; /* Un color verde para el éxito */
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .justification-card {
+            background-color: #ecfdf5; /* Fondo más claro para justificaciones */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #a7f3d0;
+        }
+        .justification-title {
+            font-weight: 600;
+            color: #047857; /* Color verde oscuro para el título de justificación */
+            margin-bottom: 0.5rem;
+        }
+        .correct-answer-text {
+            font-weight: 600;
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-8">Cuestionario de Nutrición</h1>
+        <div id="quiz-questions">
+            <!-- Las preguntas se cargarán aquí -->
+        </div>
+        <button id="submit-quiz-btn" class="submit-button">Evaluar Cuestionario</button>
+        <div id="quiz-results" class="results-section hidden">
+            <div id="score" class="score-display"></div>
+            <h2 class="text-2xl font-bold text-gray-700 mb-4">Justificaciones:</h2>
+            <div id="justifications">
+                <!-- Las justificaciones se cargarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // La base de datos de preguntas en formato JSON
+        const quizData = [
+            {
+                "pregunta_numero": 1,
+                "pregunta": "Según la información presentada, ¿cuál es la recomendación mínima de porciones de frutas y verduras que la OMS sugiere consumir al día?",
+                "opciones": {
+                    "A": "Dos porciones o 100 gramos",
+                    "B": "Tres porciones o 200 gramos",
+                    "C": "Cuatro porciones o 300 gramos",
+                    "D": "Cinco porciones o 400 gramos",
+                    "E": "Seis porciones o 500 gramos"
+                },
+                "respuesta_correcta": "D",
+                "justificacion": "Las fuentes indican explícitamente que la OMS sugiere un mínimo de cinco porciones o 400 gramos de verduras y frutas al día."
+            },
+            {
+                "pregunta_numero": 2,
+                "pregunta": "¿Cuál de los siguientes no es un hábito alimentario saludable comúnmente identificado entre los estudiantes universitarios, según la revisión sistemática de la literatura?",
+                "opciones": {
+                    "A": "Bajo consumo de frutas y verduras",
+                    "B": "Alto consumo de dulces y bollería.",
+                    "C": "Saltarse comidas, especialmente el desayuno",
+                    "D": "Alto consumo de legumbres y frutos secos",
+                    "E": "Consumo recurrente de comidas rápidas y ultraprocesadas."
+                },
+                "respuesta_correcta": "D",
+                "justificacion": "La revisión sistemática establece que los hábitos poco saludables incluyen bajo consumo de frutas y verduras (71,93%), alto consumo de dulces (57,89%), saltarse comidas (45,61%), y consumo de comidas rápidas y ultraprocesadas (45,61%). El alto consumo de legumbres y frutos secos no es un hábito poco saludable, de hecho, las legumbres y frutos secos son una fuente importante de proteínas y grasas insaturadas saludables recomendadas en la dieta."
+            },
+            {
+                "pregunta_numero": 3,
+                "pregunta": "¿Qué tipo de vitamina se encuentra exclusivamente en productos de origen animal, según la clasificación de alimentos?",
+                "opciones": {
+                    "A": "Vitamina C",
+                    "B": "Vitamina A (carotenos)",
+                    "C": "Vitamina B",
+                    "D": "Ácido Fólico",
+                    "E": "Vitamina E"
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "La tabla de características nutricionales generales de alimentos de origen vegetal y animal indica que la Vitamina B se encuentra Sí en alimentos de origen animal, pero NO en alimentos de origen vegetal."
+            },
+            {
+                "pregunta_numero": 4,
+                "pregunta": "¿Cuál es la razón principal por la que los cereales integrales son una fuente de energía más recomendable para los estudiantes universitarios que los azúcares simples, como los presentes en la bollería industrial?",
+                "opciones": {
+                    "A": "Los cereales integrales son más sabrosos y agradables al paladar.",
+                    "B": "Los azúcares simples aportan más vitaminas y minerales esenciales.",
+                    "C": "Los cereales integrales liberan energía de forma más lenta y sostenida, manteniendo la concentración.",
+                    "D": "La bollería industrial no contiene hidratos de carbono complejos.",
+                    "E": "El consumo de cereales integrales no tiene impacto en los niveles de glucosa en sangre."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "Los cereales integrales contienen hidratos de carbono complejos (almidones) que se absorben más lentamente, proporcionando una energía más sostenida. Esto evita picos de glucosa y contribuye a mantener la productividad y concentración durante más tiempo. Por el contrario, los azúcares simples se absorben rápidamente, pudiendo causar picos de glucosa y, si se abusan, problemas de salud y afectación de la memoria y el aprendizaje."
+            },
+            {
+                "pregunta_numero": 5,
+                "pregunta": "Si un estudiante universitario busca mejorar su rendimiento académico y su capacidad de memorización, ¿por qué el consumo regular de pescado azul (graso) sería una recomendación nutricional relevante?",
+                "opciones": {
+                    "A": "El pescado azul es bajo en calorías y ayuda a mantener un peso saludable, lo que mejora la autoestima.",
+                    "B": "El pescado azul es una fuente importante de calcio para huesos fuertes, lo cual es esencial para sentarse largas horas.",
+                    "C": "Los ácidos grasos omega-3 presentes en el pescado azul son beneficiosos para el desarrollo del cerebro y la memoria.",
+                    "D": "El pescado azul es rico en vitamina C, que previene el cansancio y el estrés.",
+                    "E": "El pescado azul proporciona fibra, lo que regula el aparato digestivo y mejora la absorción de nutrientes."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "Las fuentes especifican que los ácidos grasos omega-3 (EPA y DHA) del pescado azul son \"especialmente importantes en... personas mayores, porque tienen un papel importantísimo en el crecimiento y el desarrollo del cerebro, protegen las neuronas y mejoran la memoria\". Aunque no se menciona directamente en el contexto universitario en las fuentes, la lógica académica del \"impacto académico\" sugiere que un mejor desarrollo cerebral y memoria impacta directamente el rendimiento."
+            },
+            {
+                "pregunta_numero": 6,
+                "pregunta": "¿Cuál es la principal diferencia nutricional entre consumir una fruta entera y beber un zumo de fruta, y por qué se prefiere la fruta entera para una dieta saludable?",
+                "opciones": {
+                    "A": "El zumo tiene más vitaminas porque son concentradas, mientras la fruta entera tiene menos.",
+                    "B": "La fruta entera es más cara, por lo que el zumo es una opción más económica.",
+                    "C": "El zumo de fruta pierde gran parte de la fibra y tiene un índice glucémico más alto que la fruta entera.",
+                    "D": "La fruta entera solo aporta agua, mientras el zumo aporta azúcares y calorías.",
+                    "E": "El zumo de fruta contiene más proteínas de alto valor biológico."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "Las fuentes explican que los zumos de frutas \"pierden gran parte de la fibra que contienen las frutas frescas y tienen un alto índice glucémico\", por lo que \"no pueden sustituir el consumo de fruta entera\". Esto implica que la fruta entera es nutricionalmente superior debido a la fibra y una absorción más gradual de azúcares."
+            },
+            {
+                "pregunta_numero": 7,
+                "pregunta": "Un estudiante universitario se siente constantemente fatigado y le cuesta concentrarse en sus clases de la tarde, lo que afecta su rendimiento. Basándose en los hábitos saludables recomendados, ¿qué ajuste dietético debería priorizar para combatir esta situación?",
+                "opciones": {
+                    "A": "Aumentar el consumo de bebidas azucaradas para una energía rápida.",
+                    "B": "Saltarse el desayuno para ahorrar tiempo y calorías.",
+                    "C": "Asegurarse de desayunar todos los días con nutrientes que inicien su metabolismo correctamente.",
+                    "D": "Consumir más comidas rápidas y ultraprocesadas por su conveniencia.",
+                    "E": "Reducir la ingesta de agua para evitar interrupciones en el estudio."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "La fuente destaca que el desayuno \"inicia la actividad del metabolismo interno\" y \"proporcionará los nutrientes necesarios para iniciar tu día de manera correcta eliminando sensaciones como cansancio, estrés, ansiedad, enojo o hambre\". Además, la hidratación adecuada es clave para mantener la concentración y evitar fatiga y dolores de cabeza. Evitar la comida chatarra también es crucial, ya que dietas con alto contenido de azúcares y grasas pueden \"suprimir la actividad de un péptido del cerebro denominado BDNF (factor neurotrófico derivado del cerebro), que ayuda en la formación de la memoria y el aprendizaje\". Saltarse el desayuno es un hábito poco saludable comúnmente identificado entre estudiantes universitarios."
+            },
+            {
+                "pregunta_numero": 8,
+                "pregunta": "Una estudiante universitaria vegetariana desea asegurar que su ingesta de proteínas sea de la más alta calidad posible, comparable a la de origen animal, sin consumir carne ni pescado. Basándose en los principios de la nutrición, ¿qué estrategia de combinación de alimentos debería aplicar?",
+                "opciones": {
+                    "A": "Consumir solo frutas y verduras, ya que son la base de una dieta saludable.",
+                    "B": "Incrementar el consumo de frutos secos como única fuente de proteína vegetal.",
+                    "C": "Combinar legumbres con cereales en la misma comida para complementar los aminoácidos.",
+                    "D": "Centrarse únicamente en alimentos procesados enriquecidos con proteínas.",
+                    "E": "Aumentar drásticamente el consumo de lácteos para compensar."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "Las fuentes explican que las proteínas de cereales y legumbres, aunque por separado pueden ser deficitarias en ciertos aminoácidos esenciales (cereales en lisina, legumbres en metionina), se complementan entre sí cuando se consumen juntos, logrando que el valor nutritivo de su proteína \"llegue a ser casi como el de las proteínas animales\". Este es un concepto clave de \"complementación proteica\" para dietas basadas en vegetales."
+            },
+            {
+                "pregunta_numero": 9,
+                "pregunta": "Un estudiante está preocupado por el riesgo de desarrollar enfermedades cardiovasculares en el futuro, un problema común entre la población universitaria con malos hábitos alimenticios. Si quisiera elegir las grasas más saludables para su dieta, ¿cuál de las siguientes opciones priorizaría, de acuerdo con las recomendaciones nutricionales?",
+                "opciones": {
+                    "A": "Aumentar el consumo de mantequilla y manteca de cerdo por su origen natural.",
+                    "B": "Elegir aceites vegetales tropicales como el de palma y coco por su bajo costo.",
+                    "C": "Limitar todas las grasas al mínimo, sin importar su tipo.",
+                    "D": "Priorizar el aceite de oliva, frutos secos y pescados grasos por sus ácidos grasos insaturados.",
+                    "E": "Consumir principalmente margarinas hidrogenadas por ser de origen vegetal."
+                },
+                "respuesta_correcta": "D",
+                "justificacion": "Las fuentes clasifican las grasas insaturadas como \"cardiosaludables\". Específicamente, el aceite de oliva es el \"más recomendable de todos por su alto contenido en ácidos grasos monoinsaturados (oleico)\". Los frutos secos son \"fuente importante de grasas insaturadas\", y el pescado azul es una fuente casi única de ácidos grasos poliinsaturados omega-3, que tienen un \"papel importantísimo... en la enfermedad cardiovascular\". Por el contrario, un consumo excesivo de grasas saturadas (presentes en la mantequilla, manteca, y aceites de palma/coco) conlleva un aumento de colesterol perjudicial, y las margarinas pueden contener ácidos grasos \"trans\", considerados perjudiciales para la salud."
+            },
+            {
+                "pregunta_numero": 10,
+                "pregunta": "¿Cuál de las siguientes comparaciones resalta correctamente una diferencia fundamental en el aporte nutricional entre la carne roja y los cereales integrales, según la información sobre nutrientes y alimentos?",
+                "opciones": {
+                    "A": "La carne roja es una fuente significativa de fibra dietética, mientras que los cereales integrales carecen de ella.",
+                    "B": "Los cereales integrales aportan principalmente proteínas de alta calidad con todos los aminoácidos esenciales, a diferencia de la carne roja.",
+                    "C": "La carne roja es rica en hierro hemo de alta biodisponibilidad, mientras que los cereales integrales contienen hierro no hemo de baja biodisponibilidad.",
+                    "D": "Ambos son fuentes exclusivas de vitamina B12 y carecen de vitamina C.",
+                    "E": "Los cereales integrales tienen un alto contenido de grasas saturadas, mientras que la carne roja es baja en este tipo de grasa."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "Las fuentes indican que el hierro de origen animal (hemo) en la carne tiene una alta biodisponibilidad, mientras que el hierro de origen vegetal (no hemo) en los cereales tiene baja biodisponibilidad. La opción A es incorrecta porque la carne carece de fibra y los cereales integrales son ricos en ella. La opción B es incorrecta porque las proteínas de la carne son de alta calidad, mientras que las de los cereales, aunque de buena calidad, son incompletas (deficitarias en lisina). La opción D es incorrecta porque solo los productos de origen animal contienen B12 y la vitamina C no está presente en la carne ni en los cereales. La opción E es incorrecta porque los cereales tienen bajo contenido de grasa y la grasa de la carne es principalmente saturada."
+            },
+            {
+                "pregunta_numero": 11,
+                "pregunta": "¿Cómo el proceso de hidrogenación industrial de aceites vegetales para producir margarina altera su perfil de grasas y sus implicaciones para la salud en comparación con los aceites no hidrogenados?",
+                "opciones": {
+                    "A": "La hidrogenación aumenta el contenido de grasas monoinsaturadas, haciéndolas más cardiosaludables que los aceites de oliva.",
+                    "B": "La hidrogenación reduce la cantidad total de grasa, lo que las convierte en una opción más baja en calorías que los aceites líquidos.",
+                    "C": "Durante la hidrogenación se forman ácidos grasos \"trans\", que se consideran perjudiciales para la salud, a diferencia de los aceites vegetales líquidos sin procesar.",
+                    "D": "La hidrogenación concentra las vitaminas liposolubles, convirtiendo la margarina en una fuente superior de vitaminas A y D que la mantequilla.",
+                    "E": "La margarina hidrogenada adquiere un perfil de ácidos grasos saturados similar al de los pescados azules, beneficiando la salud cardiovascular."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "Las fuentes explican que las margarinas, resultado de la hidrogenación de aceites vegetales, contienen ácidos grasos \"trans\" que son considerados perjudiciales para la salud. Las opciones A, B, D y E son incorrectas. La hidrogenación se realiza para solidificar los aceites, y los ácidos grasos \"trans\" no son cardiosaludables. Aunque la margarina puede estar enriquecida con vitaminas A y D, esto no se debe directamente a la hidrogenación, y los aceites líquidos como el de oliva son preferibles por su composición de ácidos grasos monoinsaturados."
+            },
+            {
+                "pregunta_numero": 12,
+                "pregunta": "Analizando la información sobre los factores que condicionan el valor nutritivo de los alimentos, ¿cuál de las siguientes afirmaciones explica mejor por qué una patata, a pesar de su bajo contenido de vitamina C en crudo, puede ser un \"mejor suministrador\" de esta vitamina para ciertos grupos de población en comparación con una naranja o un pimiento?",
+                "opciones": {
+                    "A": "La patata contiene enzimas que aumentan la biodisponibilidad de la vitamina C al cocinarse.",
+                    "B": "La patata contiene vitamina C más estable al calor que la vitamina C de las frutas.",
+                    "C": "Algunos grupos de población consumen la patata en cantidades significativamente mayores que las frutas, compensando su menor concentración por porción.",
+                    "D": "La patata, al ser un tubérculo, absorbe vitamina C del suelo durante su crecimiento en mayor medida.",
+                    "E": "La vitamina C de la patata interactúa positivamente con otros nutrientes, mejorando su absorción y retención en el organismo."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "Las fuentes explican que, aunque la patata tiene un bajo contenido de vitamina C en comparación con la naranja o el pimiento y pierde una parte importante al cocinarse, para muchos grupos de población es el \"mejor suministrador\" de vitamina C debido a que se consume en grandes cantidades y con alta frecuencia."
+            },
+            {
+                "pregunta_numero": 13,
+                "pregunta": "Un anuncio publicitario afirma que la cerveza es una \"fuente de ácido fólico necesario\". Basándose en la información nutricional proporcionada, ¿qué tan válida es esta afirmación para justificar su consumo como fuente principal de ácido fólico en la dieta de un adulto?",
+                "opciones": {
+                    "A": "Es totalmente válida, ya que la cerveza contiene una cantidad significativa de ácido fólico que cubre las necesidades diarias.",
+                    "B": "Es engañosa, porque para obtener la cantidad recomendada de ácido fólico solo a través de la cerveza, se necesitaría un consumo excesivo con riesgos para la salud.",
+                    "C": "Es una afirmación precisa, dado que la cerveza es la única bebida que aporta ácido fólico, a diferencia de otras fuentes alimentarias.",
+                    "D": "Es válida únicamente para personas con deficiencia de ácido fólico y bajo peso corporal.",
+                    "E": "La afirmación es neutral, ya que el ácido fólico en la cerveza es una forma más biodisponible que en otros alimentos."
+                },
+                "respuesta_correcta": "B",
+                "justificacion": "Las fuentes señalan que, si bien la cerveza contiene algo de ácido fólico, para cubrir la ingesta recomendada de 200 µg (parte de los $400~\\mu g/dia$ recomendados) se necesitarían 4.000 mL de cerveza (aproximadamente 12 latas), lo que constituye un consumo excesivo y no es recomendable debido a los riesgos del alcohol."
+            },
+            {
+                "pregunta_numero": 14,
+                "pregunta": "Considerando la composición nutricional del yogur en comparación con la leche, ¿cuál de las siguientes afirmaciones evalúa mejor la idoneidad del yogur como alternativa para personas con intolerancia a la lactosa?",
+                "opciones": {
+                    "A": "El yogur es una alternativa ideal porque no contiene lactosa en absoluto, eliminando el riesgo de molestias digestivas.",
+                    "B": "El yogur es una alternativa razonable porque la lactosa está parcialmente fermentada y en menor cantidad, lo que mejora la tolerancia.",
+                    "C": "El yogur no es una buena alternativa, ya que las bacterias lácticas aumentan el contenido de lactosa, empeorando la intolerancia.",
+                    "D": "La idoneidad del yogur es nula, puesto que solo proporciona probióticos y no los mismos nutrientes que la leche.",
+                    "E": "El yogur es solo adecuado si se consume con enzimas de lactasa adicionales para asegurar la digestión."
+                },
+                "respuesta_correcta": "B",
+                "justificacion": "Las fuentes explican que el yogur contiene lactosa fermentada en menor cantidad que la leche, lo que lo hace \"mucho mejor tolerada cuando existe intolerancia a la lactosa\". Una hidrólisis parcial de la lactosa (30-70%) puede ser suficiente para resolver el problema de la intolerancia a la lactosa."
+            },
+            {
+                "pregunta_numero": 15,
+                "pregunta": "Dada la tendencia de los estudiantes universitarios a consumir comidas rápidas y ultraprocesadas debido a su conveniencia y bajo costo, ¿qué tan eficaz es esta elección dietética para mantener un buen rendimiento académico a largo plazo, según los principios de una alimentación balanceada?",
+                "opciones": {
+                    "A": "Muy eficaz, ya que proporcionan energía rápida y son prácticas para horarios ajustados, lo que optimiza el tiempo de estudio.",
+                    "B": "Poco eficaz, porque su alto contenido de azúcares y grasas puede afectar la memoria y el aprendizaje, y generar problemas de salud crónicos.",
+                    "C": "Neutra, ya que el rendimiento académico depende más de la capacidad intelectual individual que de los hábitos alimenticios.",
+                    "D": "Muy eficaz, siempre que se complementen con multivitaminas para suplir cualquier deficiencia nutricional.",
+                    "E": "Eficaz solo si el estudiante mantiene una alta actividad física para compensar el consumo de calorías vacías."
+                },
+                "respuesta_correcta": "B",
+                "justificacion": "Las dietas con un alto contenido de azúcares y grasas, comunes en la comida chatarra y ultraprocesados, \"pueden suprimir la actividad de un péptido del cerebro denominado BDNF (factor neurotrófico derivado del cerebro), que ayuda en la formación de la memoria y el aprendizaje\". Además, se asocian con sobrepeso/obesidad y el riesgo de enfermedades crónicas no transmisibles como enfermedades cardiovasculares y diabetes."
+            },
+            {
+                "pregunta_numero": 16,
+                "pregunta": "Un estudiante universitario busca diseñar un plan de snacks saludables para mantener sus niveles de energía y concentración durante largas sesiones de estudio sin recurrir a la comida chatarra. Basándose en los principios de una alimentación balanceada, ¿cuál de las siguientes opciones representa la mejor combinación de snacks para este objetivo?",
+                "opciones": {
+                    "A": "Galletas dulces y bebidas energéticas para un impulso rápido de azúcar.",
+                    "B": "Una porción de patatas fritas y un refresco por su comodidad y sabor.",
+                    "C": "Frutos secos como almendras o nueces y una pieza de fruta (ej., manzana o plátano).",
+                    "D": "Un gran plato de pasta con salsa cremosa para una energía duradera.",
+                    "E": "Un trozo de queso curado y un embutido por su alto contenido proteico."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "Los frutos secos son una fuente importante de grasas insaturadas, fibra y proteínas, que proporcionan energía sostenida y son beneficiosas para el cerebro y la memoria (omega-3). Las frutas son bajas en calorías, ricas en agua, vitaminas, minerales y fibra, con azúcares simples de bajo o medio índice glucémico que se absorben paulatinamente, evitando picos de glucosa y ofreciendo energía constante. Además, las frutas enteras son preferibles a los zumos por su fibra. Las demás opciones incluyen alimentos con alto contenido de azúcares simples, grasas saturadas o ultraprocesados, que se desaconsejan por sus efectos negativos en la salud y el rendimiento."
+            },
+            {
+                "pregunta_numero": 17,
+                "pregunta": "Un estudiante quiere crear una dieta semanal que priorice la salud cardiovascular y la reducción del colesterol LDL (\"malo\"). Considerando las recomendaciones sobre grasas y alimentos, ¿cuál sería la estrategia dietética más efectiva a implementar?",
+                "opciones": {
+                    "A": "Aumentar el consumo de lácteos enteros, mantequilla y carnes rojas para asegurar un aporte calórico suficiente.",
+                    "B": "Priorizar el consumo de alimentos ricos en grasas monoinsaturadas y poliinsaturadas, como aceite de oliva, frutos secos y pescado azul.",
+                    "C": "Reducir drásticamente todas las grasas de la dieta, incluyendo las presentes en alimentos naturales como el aguacate o las nueces.",
+                    "D": "Consumir principalmente cereales de desayuno enriquecidos y bollería con aceites vegetales tropicales para la energía diaria.",
+                    "E": "Eliminar completamente el consumo de huevos debido a su contenido de colesterol."
+                },
+                "respuesta_correcta": "B",
+                "justificacion": "Las grasas insaturadas son \"cardiosaludables\", aumentando el colesterol HDL (\"bueno\") y reduciendo el LDL (\"malo\") y los triglicéridos. El aceite de oliva es \"el más recomendable\" por su alto contenido en monoinsaturados (oleico), y los pescados azules son una fuente importante y casi única de ácidos grasos omega-3 (EPA y DHA), esenciales para la enfermedad cardiovascular. Los frutos secos también son una fuente importante de grasas insaturadas. Las opciones A y D aumentan el consumo de grasas saturadas y trans, que son perjudiciales. La opción C es incorrecta porque las grasas saludables son necesarias. La opción E es incorrecta, ya que el colesterol del huevo no provoca un aumento directo del colesterol en sangre en la población general y la lecitina del huevo disminuye su absorción."
+            },
+            {
+                "pregunta_numero": 18,
+                "pregunta": "Un grupo de estudiantes universitarios decide crear un programa de concientización sobre alimentación saludable para sus compañeros. Considerando los hábitos alimenticios más prevalentes y sus efectos en la salud identificados en la revisión sistemática, ¿cuál debería ser el mensaje clave y la prioridad de intervención de su campaña para lograr el mayor impacto?",
+                "opciones": {
+                    "A": "\"Prioriza el consumo de legumbres y frutos secos para una dieta equilibrada\", ya que son los alimentos menos consumidos.",
+                    "B": "\"El desayuno es opcional si se compensa con comidas más abundantes después\", ya que solo un pequeño porcentaje de estudiantes lo salta.",
+                    "C": "\"Modera el consumo de comida rápida y ultraprocesada, y aumenta la ingesta de frutas y verduras\", debido a su alta prevalencia como malos hábitos y su fuerte incidencia en sobrepeso y enfermedades crónicas.",
+                    "D": "\"Las bebidas azucaradas son una buena fuente de energía para el estudio\", dada su popularidad entre los universitarios.",
+                    "E": "\"No te preocupes por la grasa en tu dieta, toda es buena\", ya que las grasas son una fuente concentrada de energía."
+                },
+                "respuesta_correcta": "C",
+                "justificacion": "La revisión sistemática concluye que los hábitos más frecuentes entre los estudiantes universitarios son el bajo consumo de frutas y verduras (71,93%) y el alto consumo de dulces, grasas y comidas rápidas/ultraprocesadas (45,61%-57,89%). Además, estos malos hábitos tienen una \"alta incidencia\" en problemas de salud como sobrepeso (47,21%), enfermedades cardiovasculares (18,18%) y diabetes (14,55%), y están asociados con el riesgo de futuras enfermedades crónicas no transmisibles. Por lo tanto, centrar la campaña en estos aspectos sería lo más impactante y relevante."
+            }
+        ];
+
+        let selectedQuestions = []; // Almacena las preguntas seleccionadas para el quiz
+
+        // Función para mezclar un array (algoritmo de Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Intercambia elementos
+            }
+        }
+
+        // Función para seleccionar 5 preguntas al azar
+        function getRandomQuestions(numQuestions) {
+            const allQuestions = [...quizData]; // Copia el array para no modificar el original
+            shuffleArray(allQuestions); // Mezcla todas las preguntas
+            return allQuestions.slice(0, numQuestions); // Toma las primeras 'numQuestions'
+        }
+
+        // Función para mostrar el cuestionario
+        function displayQuiz() {
+            const quizQuestionsContainer = document.getElementById('quiz-questions');
+            quizQuestionsContainer.innerHTML = ''; // Limpia preguntas anteriores
+            document.getElementById('quiz-results').classList.add('hidden'); // Oculta resultados anteriores
+            document.getElementById('submit-quiz-btn').classList.remove('hidden'); // Asegura que el botón de envío sea visible
+
+            selectedQuestions = getRandomQuestions(5); // Selecciona 5 preguntas al azar
+
+            selectedQuestions.forEach((q, index) => {
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card';
+
+                const questionTitle = document.createElement('p');
+                questionTitle.className = 'question-title';
+                questionTitle.textContent = `${index + 1}. ${q.pregunta}`;
+                questionCard.appendChild(questionTitle);
+
+                const optionsKeys = Object.keys(q.opciones);
+                shuffleArray(optionsKeys); // Mezcla las claves de las opciones (A, B, C, D, E)
+
+                optionsKeys.forEach(key => {
+                    const optionValue = q.opciones[key];
+
+                    const label = document.createElement('label');
+                    label.className = 'option-label';
+
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.name = `question-${index}`;
+                    radioInput.value = key; // El valor del radio es la letra de la opción
+                    radioInput.id = `q${index}-option-${key}`; // ID único para el label
+
+                    label.appendChild(radioInput);
+                    label.appendChild(document.createTextNode(`${key}) ${optionValue}`));
+                    questionCard.appendChild(label);
+                });
+
+                quizQuestionsContainer.appendChild(questionCard);
+            });
+        }
+
+        // Función para evaluar el cuestionario
+        function submitQuiz() {
+            let score = 0;
+            const userAnswers = {}; // Para almacenar las respuestas del usuario
+
+            selectedQuestions.forEach((q, index) => {
+                const radios = document.getElementsByName(`question-${index}`);
+                let selectedOption = null;
+                for (const radio of radios) {
+                    if (radio.checked) {
+                        selectedOption = radio.value;
+                        break;
+                    }
+                }
+                userAnswers[q.pregunta_numero] = selectedOption; // Almacena la respuesta del usuario
+            });
+
+            // Oculta el cuestionario y muestra los resultados
+            document.getElementById('quiz-questions').classList.add('hidden');
+            document.getElementById('submit-quiz-btn').classList.add('hidden');
+            document.getElementById('quiz-results').classList.remove('hidden');
+
+            const justificationsContainer = document.getElementById('justifications');
+            justificationsContainer.innerHTML = ''; // Limpia justificaciones anteriores
+
+            selectedQuestions.forEach((q, index) => {
+                const userAnswer = userAnswers[q.pregunta_numero];
+                const correctAnswer = q.respuesta_correcta;
+
+                if (userAnswer === correctAnswer) {
+                    score++;
+                }
+
+                const justificationCard = document.createElement('div');
+                justificationCard.className = 'justification-card';
+
+                const questionText = document.createElement('p');
+                questionText.className = 'justification-title';
+                questionText.textContent = `Pregunta ${index + 1}: ${q.pregunta}`;
+                justificationCard.appendChild(questionText);
+
+                const userAnswerDisplay = document.createElement('p');
+                userAnswerDisplay.innerHTML = `Tu respuesta: <strong>${userAnswer ? userAnswer + ') ' + q.opciones[userAnswer] : 'No respondida'}</strong>`;
+                if (userAnswer === correctAnswer) {
+                    userAnswerDisplay.classList.add('text-green-700'); // Estilo para respuesta correcta
+                } else {
+                    userAnswerDisplay.classList.add('text-red-700'); // Estilo para respuesta incorrecta
+                }
+                justificationCard.appendChild(userAnswerDisplay);
+
+                const correctAnswerDisplay = document.createElement('p');
+                correctAnswerDisplay.className = 'correct-answer-text';
+                correctAnswerDisplay.innerHTML = `Respuesta correcta: <strong>${correctAnswer}) ${q.opciones[correctAnswer]}</strong>`;
+                justificationCard.appendChild(correctAnswerDisplay);
+
+                const justificationText = document.createElement('p');
+                justificationText.textContent = `Justificación: ${q.justificacion}`;
+                justificationCard.appendChild(justificationText);
+
+                justificationsContainer.appendChild(justificationCard);
+            });
+
+            document.getElementById('score').textContent = `Obtuviste ${score} de ${selectedQuestions.length} preguntas correctas.`;
+        }
+
+        // Event listener para el botón de enviar
+        document.addEventListener('DOMContentLoaded', () => {
+            displayQuiz(); // Muestra el quiz al cargar la página
+            document.getElementById('submit-quiz-btn').addEventListener('click', submitQuiz);
+        });
+    </script>
+</body>
+</html>
